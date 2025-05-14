@@ -1,7 +1,16 @@
-import type { NextConfig } from "next";
+import nextTranslate from 'next-translate'
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const nextConfig = nextTranslate({
+  reactStrictMode: true,
+  swcMinify: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+      },
+    ],
+  },
+});
 
 export default nextConfig;
