@@ -1,4 +1,3 @@
-/* eslint-disable no-var */
 import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI!;
@@ -11,25 +10,21 @@ if (!process.env.MONGODB_URI) {
   throw new Error("Please add your Mongo URI to .env.local");
 }
 
-// Fix the type declaration for global context
-declare global {
-  // This lets you reuse the same Mongo connection across hot reloads in dev
-  // Must allow 'undefined' because it's not guaranteed to be set
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
-}
+const globalWithMongo = global as typeof globalThis & {
+  _mongoClientPromise?: Promise<MongoClient>;
+};
 
 if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
+  if (!globalWithMongo._mongoClientPromise) {
     client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+    globalWithMongo._mongoClientPromise = client.connect();
   }
-  clientPromise = global._mongoClientPromise!;
+  clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
 
-// This function returns the client + db handle
 const connectToDatabase = async () => {
   const client = await clientPromise;
   const db = client.db("nomads-path");
